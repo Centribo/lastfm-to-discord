@@ -9,64 +9,86 @@ let updateInterval:number = config.interval;
 let lastfmUsername:string = config.lastfmUsername;
 let lastfmApiKey:string   = config.lastfmApiKey;
 let discordToken:string   = config.discordToken;
-
-client.on('ready', () => {
-	console.log(client.user.tag);
-});
+var loop;
 
 client.login(discordToken);
 
-http.get(
-	"http://ws.audioscrobbler.com/2.0/"
-	+ "?method=" + "user.getrecenttracks"
-	+ "&user=" + lastfmUsername
-	+ "&api_key=" + lastfmApiKey
-	+ "&limit=" + "1"
-	+ "&format=json",
-	
-	(resp) => {
-		let data:string = '';
-		
-		resp.on('data', (chunk) =>{
-			data += chunk;
-		});
-		
-		resp.on('end', ()=> {
-			let dataJSON = JSON.parse(data);
-			
-			updateDiscordStatus(dataJSON.recenttracks.track[0]);
-		});
-		
-}).on('error', (err) =>{
-		console.log("Error:" + err.message);
+client.on('ready', () => {
+	console.log(new Date() + ": Logged into Discord as: " + client.user.tag);
+	// client.user.setPresence({ game: { name: "YEET YEET" }, status: "online" });
+	startLoop();
+	return;
 });
 
+
+client.on('disconnect', () => {
+	console.log(new Date() + ": Discord client disconnected");
+	stopLoop();
+	client.destroy();
+	return;
+});
+
+function stopLoop(){
+	console.log(new Date() + ": Stopping loop");
+	clearInterval(loop);
+	return;
+}
+
+function startLoop (){
+	loop = setInterval(function() { getLastfmData() }, updateInterval * 1000);
+	return;
+}
+
+function getLastfmData(){
+	http.get(
+		"http://ws.audioscrobbler.com/2.0/"
+		+ "?method=" + "user.getrecenttracks"
+		+ "&user=" + lastfmUsername
+		+ "&api_key=" + lastfmApiKey
+		+ "&limit=" + "1"
+		+ "&format=json",
+		
+		(resp) => {
+			var data:string = '';
+			
+			resp.on('data', (chunk) =>{
+				data += chunk;
+			});
+			
+			resp.on('end', ()=> {
+				var dataJSON = JSON.parse(data);
+				updateDiscordStatus(dataJSON.recenttracks.track[0]);
+				return;
+			});
+			
+	}).on('error', (err) =>{
+		console.log(new Date() + ": Last.fm API Error:" + err.message);
+		return;
+	});
+	return;
+}
+
+
 function updateDiscordStatus(trackData){
-	let isNowPlaying:boolean = trackData["@attr"].nowplaying;
+	// let isNowPlaying:boolean = trackData["@attr"].nowplaying;
 	let artist:string = trackData.artist["#text"];
 	let album:string = trackData.album["#text"];
 	let song:string = trackData.name;
 
-	if(isNowPlaying){
-
+	if(client.status == Discord.Constants.Status["READY"]){
+		let status:string = artist + " - " + song;
+		console.log(new Date() + ": Set status to: " + status);
+		client.user.setActivity(status, { type: "LISTENING" });
 	} else {
-
+		console.log(new Date() + ": Discord client not connected");
+		stopLoop();
+		client.destroy();
 	}
 }
 
-// https.get('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY', (resp) => {
-// 	let data = '';
-	
-// 	// A chunk of data has been recieved.
-// 	resp.on('data', (chunk) => {
-// 		data += chunk;
-// 	});
-	
-// 	// The whole response has been received. Print out the result.
-// 	resp.on('end', () => {
-// 		console.log(JSON.parse(data).explanation);
-// 	});
-	
-// }).on("error", (err) => {
-// 	console.log("Error: " + err.message);
-// });
+process.on('SIGINT', function(){
+	console.log(new Date() + ": Closing");
+	stopLoop();
+	client.destroy();
+	process.exit();
+});
