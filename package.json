@@ -1,0 +1,20 @@
+{
+	"name": "lastfm-to-discord",
+	"version": "1.0.0",
+	"description": "Set your Discord status to be what you're listening on Last.fm",
+	"main": "index.js",
+	"scripts": {
+		"compile": "tsc index.ts",
+		"start": "node index.js",
+		"run": "npm run compile && npm run start"
+	},
+	"author": "Adam Leung",
+	"license": "ISC",
+	"dependencies": {
+		"bufferutil": "^4.0.1",
+		"discord.js": "^11.4.2",
+		"erlpack": "github:hammerandchisel/erlpack",
+		"typescript": "^3.3.4000",
+		"uws": "^100.0.1"
+	}
+}
