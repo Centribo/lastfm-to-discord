@@ -4,13 +4,14 @@
 	"description": "Set your Discord status to be what you're listening on Last.fm",
 	"main": "index.js",
 	"scripts": {
-		"compile": "tsc index.ts",
+		"compile": "tsc",
 		"start": "node index.js",
 		"run": "npm run compile && npm run start"
 	},
 	"author": "Adam Leung",
 	"license": "ISC",
 	"dependencies": {
+		"@types/node": "^11.11.6",
 		"bufferutil": "^4.0.1",
 		"discord.js": "^11.4.2",
 		"erlpack": "github:hammerandchisel/erlpack",
