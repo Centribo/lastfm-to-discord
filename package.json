@@ -2,6 +2,11 @@
 	"name": "lastfm-to-discord",
 	"version": "1.0.0",
 	"description": "Set your Discord status to be what you're listening on Last.fm",
+	"homepage": "https://github.com/Centribo/lastfm-to-discord",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Centribo/lastfm-to-discord.git"
+	},
 	"main": "index.js",
 	"scripts": {
 		"compile": "tsc",
